@@ -1,0 +1,25 @@
+{
+  "name": "ainovel-platform",
+  "private": true,
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
+    "test": "turbo test",
+    "dev:web": "turbo dev --filter=@ainovel/web",
+    "dev:api": "turbo dev --filter=@ainovel/backend",
+    "dev:ai": "cd services/ai-service && uvicorn app.main:app --reload --port 8000",
+    "infra:up": "cd infra/docker && docker compose up -d",
+    "infra:down": "cd infra/docker && docker compose down"
+  },
+  "devDependencies": {
+    "turbo": "^2.4",
+    "typescript": "^5.7"
+  },
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  }
+}
