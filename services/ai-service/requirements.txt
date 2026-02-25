@@ -1,0 +1,8 @@
+fastapi>=0.115
+uvicorn[standard]>=0.34
+anthropic>=0.45
+openai>=1.60
+pydantic>=2.10
+pydantic-settings>=2.7
+httpx>=0.28
+python-dotenv>=1.0

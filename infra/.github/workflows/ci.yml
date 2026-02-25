@@ -1,0 +1,88 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      web: ${{ steps.filter.outputs.web }}
+      backend: ${{ steps.filter.outputs.backend }}
+      ai: ${{ steps.filter.outputs.ai }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            web:
+              - 'packages/web/**'
+              - 'packages/shared/**'
+            backend:
+              - 'packages/backend/**'
+              - 'packages/shared/**'
+            ai:
+              - 'services/ai-service/**'
+
+  lint-and-typecheck:
+    needs: changes
+    if: needs.changes.outputs.web == 'true' || needs.changes.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm turbo lint typecheck
+
+  test-backend:
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+    services:
+      mongodb:
+        image: mongo:8.0
+        ports:
+          - 27017:27017
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm turbo test --filter=@ainovel/backend
+        env:
+          MONGODB_URI: mongodb://localhost:27017/ainovel-test
+          REDIS_HOST: localhost
+          JWT_ACCESS_SECRET: test-secret
+          JWT_REFRESH_SECRET: test-refresh-secret
+
+  test-ai:
+    needs: changes
+    if: needs.changes.outputs.ai == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - working-directory: services/ai-service
+        run: |
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio
+          pytest tests/ -v
