@@ -21,11 +21,9 @@ jobs:
         with:
           filters: |
             web:
-              - 'packages/web/**'
-              - 'packages/shared/**'
+              - 'frontend/**'
             backend:
-              - 'packages/backend/**'
-              - 'packages/shared/**'
+              - 'backend/**'
             ai:
               - 'services/ai-service/**'
 

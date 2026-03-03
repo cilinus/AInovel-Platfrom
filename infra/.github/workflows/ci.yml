@@ -18,11 +18,9 @@ jobs:
         with:
           filters: |
             web:
-              - 'packages/web/**'
-              - 'packages/shared/**'
+              - 'frontend/**'
             backend:
-              - 'packages/backend/**'
-              - 'packages/shared/**'
+              - 'backend/**'
             ai:
               - 'services/ai-service/**'
 
@@ -32,15 +30,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 9
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'pnpm'
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm turbo lint typecheck
+          cache: 'npm'
+      - run: npm run install:all
+      - run: npm run lint
 
   test-backend:
     needs: changes
@@ -57,15 +52,12 @@ jobs:
           - 6379:6379
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 9
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'pnpm'
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm turbo test --filter=@ainovel/backend
+          cache: 'npm'
+      - run: cd backend && npm ci
+      - run: cd backend && npm run test
         env:
           MONGODB_URI: mongodb://localhost:27017/ainovel-test
           REDIS_HOST: localhost

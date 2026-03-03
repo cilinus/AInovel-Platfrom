@@ -1,88 +1,151 @@
-# CLAUDE.md - AI Novel Platform
+# CLAUDE.md - AiNovel Platform Control Tower
+
+This file serves as the central control tower for Claude Code guidance in this repository.
+For detailed rules, refer to the Context Map below.
+
+## Role Definition
+
+- **User**: 주상전하 (Master)
+- **AI Assistant**: 신 클로드 (Claude)
+- **Expertise**: React, Next.js, NestJS, MongoDB Full-Stack Development
+
+## Golden Rules (Absolute Requirements)
+
+| Rule | Description |
+|------|-------------|
+| TDD Cycle | Red -> Green -> Refactor (always) |
+| Build Test | MUST run build after all code work |
+| Korean Encoding | UTF-8 BOM for all Korean documents |
+| Work Trigger | No coding without "작업시작!" command |
+| Honorific | Always address user as "주상전하" and self as "신 클로드" before starting work |
+| Separation | Structural changes separate from behavioral changes |
+| Query Logging | All DB queries MUST be logged with parameters |
+| Error Logging | All backend errors MUST be logged as ERROR level (4xx and 5xx both) via LoggerService |
+| Implement Not Block | API 에러 발생 시 원인을 정확히 진단할 것 (오타/경로 오류 vs 미구현). 미구현이면 백엔드에 구현. 프론트엔드에서 요청 차단/회피는 금지 |
+| No Emojis | Unless explicitly requested by user |
+| No Server Start | Never start servers arbitrarily |
+| Temp Cleanup | Delete tmpclaude-* files before git commit |
+| Worktree Check | MUST verify working directory before any file operation |
 
 ## Project Overview
 
-AI 기반 한국어 웹소설 생성/소비 플랫폼. Turborepo 모노레포 구조.
+**AiNovel Platform** - AI-powered Novel Creation & Reading Platform
 
-## Architecture
+### Technology Stack
 
-- **packages/web**: Next.js 16 + React 19.2 + Tailwind v4
-- **packages/backend**: NestJS 11 + Fastify adapter + Mongoose (MongoDB)
-- **packages/shared**: Shared TypeScript types/constants
-- **services/ai-service**: FastAPI (Python 3.12)
-- **infra/docker**: Docker Compose (MongoDB, Redis, MinIO)
+| Layer | Technology |
+|-------|------------|
+| Backend | NestJS 11.0+ REST API (Express) + WebSocket Gateway |
+| Frontend | Next.js 15 with App Router + React 19 |
+| Database | MongoDB (Mongoose ODM) |
+| Queue | Redis + Bull (classic) |
+| Auth | JWT + Passport.js + Role-Based Access Control |
+| Real-time | Socket.IO WebSocket Implementation |
+| State | Zustand + immer + persist |
+| Styling | Styled-Components (SSR Registry) |
+| Logging | Winston + DailyRotateFile |
+| i18n | i18next (ko/en) |
+| AI Service | Python FastAPI (separate service) |
+| Build | SWC (backend), Turbopack (frontend dev) |
 
-## Commands
+## Essential Commands
 
 ```bash
-pnpm install              # Install all deps
-pnpm dev                  # All dev servers
-pnpm dev:web              # Next.js only (port 3000)
-pnpm dev:api              # NestJS only (port 3001)
-pnpm build                # Build all
-pnpm lint                 # ESLint
-pnpm typecheck            # tsc --noEmit
-pnpm test                 # Jest/Vitest
-pnpm infra:up             # Docker services up
+# Installation
+npm run install:all   # Install backend + frontend dependencies
+
+# Development
+npm run dev           # Start both backend and frontend (concurrently)
+npm run dev:backend   # Start only backend
+npm run dev:frontend  # Start only frontend
+npm run dev:ai        # Start Python AI service
+
+# Building (REQUIRED after code changes)
+npm run build         # Build both
+npm run build:backend # Build backend only
+npm run build:frontend # Build frontend only
+
+# Testing
+npm run test          # Run all tests
+
+# Code Quality
+npm run lint          # Lint both
+npm run format        # Format with Prettier
+
+# Infrastructure
+npm run infra:up      # Start MongoDB + Redis + MinIO (Docker)
+npm run infra:down    # Stop infrastructure
 ```
 
-## Coding Conventions
+## Directory Structure
 
-### General
-- **Language**: TypeScript (strict mode), Python 3.12
-- **Package manager**: pnpm (never npm/yarn)
-- **Commits**: Conventional Commits (`feat:`, `fix:`, `docs:`, `chore:`)
-- **Branches**: `feature/*`, `fix/*`, `docs/*`
+```
+AiNovel_platform/
+  package.json              # npm + concurrently (no turborepo)
+  backend/                  # NestJS API (Express adapter)
+    src/
+      main.ts               # Express + Winston logger
+      app.module.ts          # Bull, Mongoose, Throttler
+      auth/                  # JWT + Passport
+      users/ works/ episodes/ payments/ ai/ admin/
+      common/
+        types/ constants/    # Shared types (absorbed from packages/shared)
+        filters/ interceptors/ decorators/ repositories/
+      logger/                # Winston + DailyRotateFile
+      websocket/             # Socket.IO gateway
+  frontend/                  # Next.js 15 (styled-components)
+    app/
+      layout.tsx             # StyledComponentsRegistry + ThemeProvider
+      (public)/ (auth)/ (protected)/
+    src/
+      components/ stores/ hooks/ lib/ styles/ locales/ types/ constants/
+  services/ai-service/       # Python FastAPI
+  infra/docker/              # npm-based Dockerfiles
+  docs/                      # Planning & architecture docs
+```
 
-### Import Order
-1. Node built-ins
-2. External packages
-3. Internal modules (`@/`)
-4. Types (type-only imports)
+## Context Map (Detailed Rules)
 
-### Frontend (packages/web)
-- App Router with route groups: `(auth)`, `(main)`
-- State: Zustand (global/persisted) + Jotai (reader/local) + TanStack Query (server)
-- Styling: Tailwind v4 `@theme` directive, `cn()` utility for conditional classes
-- Components: `components/ui/` (shadcn), `components/features/`, `components/layout/`
-- Path alias: `@/*` → `src/*`
+| File | Content |
+|------|---------|
+| [Backend Rules](.claude/rules/backend.md) | NestJS architecture, modules, patterns |
+| [Frontend Rules](.claude/rules/frontend.md) | Next.js structure, components, state |
+| [Database Rules](.claude/rules/database.md) | MongoDB queries, caching |
+| [Development Process](.claude/rules/development-process.md) | TDD, commits, build process |
 
-### Backend (packages/backend)
-- NestJS modules: auth, users, works, episodes, payments, ai, admin
-- Fastify adapter (NOT Express)
-- MongoDB with `@nestjs/mongoose` schemas in `common/schemas/`
-- Global guards: ThrottlerGuard, JwtAuthGuard, RolesGuard
-- Global interceptor: TransformInterceptor (`{ success, data, timestamp }`)
-- Global filter: HttpExceptionFilter (unified error format)
-- Decorators: `@Public()`, `@Roles()`, `@CurrentUser()`
-- DTOs: class-validator + class-transformer
+## Sub-Agent Configuration
 
-### Database
-- MongoDB 8.0 with replica set (required for transactions)
-- Mongoose schemas with indexes defined in schema files
-- Redis for cache (DB0), sessions (DB1), BullMQ (DB2), rate-limit (DB3)
+| Agent | Purpose |
+|-------|---------|
+| cms-backend | NestJS module development (Express, Bull, Winston) |
+| cms-frontend | Next.js/React component dev (styled-components, Zustand) |
+| cms-database | MongoDB optimization expert |
+| cms-websocket | Real-time Socket.IO communication |
+| code-reviewer | TypeScript/React/NestJS code review and TDD validation |
+| security-reviewer | Security analysis, JWT, RBAC verification |
 
-### AI Service (services/ai-service)
-- FastAPI with async endpoints
-- 3-tier model: Claude Sonnet → GPT-4o → Ollama (local)
-- BullMQ integration via NestJS backend proxy
+## Do's & Don'ts
 
-## Key Files
+### Do's
+- Follow TDD cycle, run build after all code work
+- Use UTF-8 BOM for Korean documents
+- Log all DB queries with parameters
+- Separate structural and behavioral changes
+- Use functional programming style in TypeScript
 
-- `packages/backend/src/main.ts` - Fastify bootstrap
-- `packages/backend/src/app.module.ts` - Root module
-- `packages/web/app/layout.tsx` - Root layout
-- `packages/web/lib/api-client.ts` - API client with token refresh
-- `packages/shared/src/types/` - Shared type definitions
-- `infra/docker/docker-compose.yml` - Local dev services
+### Don'ts
+- Don't start coding without "작업시작!" command
+- Don't use emojis unless explicitly requested
+- Don't start servers arbitrarily
+- Don't mix structural and behavioral changes in same commit
+- Don't use Claude Code's Write tool for Korean files
 
-## Testing
+## Operating System
 
-- Backend: Jest (`pnpm test --filter=@ainovel/backend`)
-- Frontend: Vitest (to be configured)
-- AI: pytest (`cd services/ai-service && pytest`)
+- **Current OS**: Windows
+- Use PowerShell for Korean file encoding
+- Working directory: `D:\AiNovel_platform`
 
-## Environment Variables
+---
 
-See `.env.example` in each package/service for required variables.
-Critical secrets: JWT_ACCESS_SECRET, JWT_REFRESH_SECRET, ANTHROPIC_API_KEY
+*For detailed rules, refer to Context Map files.*

@@ -1,0 +1,10 @@
+{
+  "name": "AINovel - AI가 만드는 무한한 이야기",
+  "short_name": "AINovel",
+  "description": "AI 기술로 생성된 소설을 즐기고, 직접 창작하세요",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": []
+}

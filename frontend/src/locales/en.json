@@ -1,0 +1,30 @@
+{
+  "app": {
+    "title": "AINovel",
+    "subtitle": "Infinite Stories Created by AI",
+    "explore": "Explore",
+    "login": "Login",
+    "register": "Register",
+    "mypage": "My Page",
+    "logout": "Logout"
+  },
+  "genre": {
+    "romance": "Romance",
+    "fantasy": "Fantasy",
+    "martial_arts": "Martial Arts",
+    "modern": "Modern",
+    "mystery": "Mystery",
+    "sf": "Sci-Fi"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Retry",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "edit": "Edit",
+    "search": "Search"
+  }
+}

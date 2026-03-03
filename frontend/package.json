@@ -1,0 +1,40 @@
+{
+  "name": "ainovel-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack --port 3100",
+    "build": "next build",
+    "start": "next start --port 3100",
+    "lint": "next lint",
+    "format": "prettier --write \"**/*.{ts,tsx}\"",
+    "typecheck": "tsc --noEmit",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^3.10.0",
+    "i18next": "^24.2",
+    "i18next-browser-languagedetector": "^8.0",
+    "immer": "^10.1",
+    "lucide-react": "^0.474",
+    "next": "^15.3",
+    "react": "^19.0",
+    "react-dom": "^19.0",
+    "react-hook-form": "^7.54",
+    "react-i18next": "^15.4",
+    "react-toastify": "^11.0",
+    "socket.io-client": "^4.8",
+    "styled-components": "^6.1",
+    "zod": "^3.24",
+    "zustand": "^5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "^15.3",
+    "prettier": "^3.5",
+    "typescript": "^5.7"
+  }
+}

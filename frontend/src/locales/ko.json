@@ -1,0 +1,30 @@
+{
+  "app": {
+    "title": "AINovel",
+    "subtitle": "AI가 만드는 무한한 이야기",
+    "explore": "작품 탐색",
+    "login": "로그인",
+    "register": "회원가입",
+    "mypage": "마이페이지",
+    "logout": "로그아웃"
+  },
+  "genre": {
+    "romance": "로맨스",
+    "fantasy": "판타지",
+    "martial_arts": "무협",
+    "modern": "현대물",
+    "mystery": "미스터리",
+    "sf": "SF"
+  },
+  "common": {
+    "loading": "로딩 중...",
+    "error": "오류가 발생했습니다",
+    "retry": "다시 시도",
+    "save": "저장",
+    "cancel": "취소",
+    "confirm": "확인",
+    "delete": "삭제",
+    "edit": "수정",
+    "search": "검색"
+  }
+}
