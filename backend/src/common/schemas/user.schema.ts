@@ -53,6 +53,9 @@ export class User {
   @Prop({ default: 0 })
   tokenBalance: number;
 
+  @Prop({ default: 0 })
+  krwBalance: number;
+
   @Prop({ default: false })
   isActive: boolean;
 

@@ -8,6 +8,11 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Episode, EpisodeDocument } from '../common/schemas/episode.schema';
 import { Work, WorkDocument } from '../common/schemas/work.schema';
+import { Purchase, PurchaseDocument } from '../payments/schemas/purchase.schema';
+import {
+  ReadingHistory,
+  ReadingHistoryDocument,
+} from '../common/schemas/reading-history.schema';
 import { CreateEpisodeDto } from './dto/create-episode.dto';
 import { UpdateEpisodeDto } from './dto/update-episode.dto';
 import { ReorderEpisodesDto } from './dto/reorder-episodes.dto';
@@ -18,6 +23,9 @@ export class EpisodesService {
   constructor(
     @InjectModel(Episode.name) private episodeModel: Model<EpisodeDocument>,
     @InjectModel(Work.name) private workModel: Model<WorkDocument>,
+    @InjectModel(Purchase.name) private purchaseModel: Model<PurchaseDocument>,
+    @InjectModel(ReadingHistory.name)
+    private readingHistoryModel: Model<ReadingHistoryDocument>,
     private readonly logger: LoggerService,
   ) {}
 
@@ -409,9 +417,9 @@ export class EpisodesService {
     };
   }
 
-  async getContent(episodeId: string): Promise<EpisodeDocument> {
+  async getContent(episodeId: string, userId?: string) {
     this.logger.debug(
-      `episodes.getContent - findById: ${episodeId}`,
+      `episodes.getContent - findById: ${episodeId}, userId: ${userId ?? 'anonymous'}`,
       'EpisodesService',
     );
 
@@ -424,7 +432,78 @@ export class EpisodesService {
       throw new NotFoundException('Episode not found');
     }
 
-    return episode;
+    // Free episodes: return full content
+    if (episode.isFree || episode.price === 0) {
+      if (userId) {
+        this.recordReadingHistory(userId, episode).catch(() => {});
+      }
+      return episode;
+    }
+
+    // No user: require purchase
+    if (!userId) {
+      const episodeObj = episode.toObject();
+      return { ...episodeObj, content: '', requiresPurchase: true };
+    }
+
+    // Author's own episode: return full content
+    const work = await this.workModel.findById(episode.workId);
+    if (work && work.authorId.toString() === userId) {
+      this.recordReadingHistory(userId, episode).catch(() => {});
+      return episode;
+    }
+
+    // Check purchase
+    const purchased = await this.purchaseModel.findOne({ userId, episodeId });
+    if (purchased) {
+      this.recordReadingHistory(userId, episode).catch(() => {});
+      return episode;
+    }
+
+    // Not purchased: strip content
+    const episodeObj = episode.toObject();
+    return { ...episodeObj, content: '', requiresPurchase: true };
+  }
+
+  private async recordReadingHistory(
+    userId: string,
+    episode: EpisodeDocument,
+  ) {
+    try {
+      const work = await this.workModel
+        .findById(episode.workId)
+        .select('episodeCount')
+        .lean();
+      const totalEpisodes = work?.episodeCount ?? 0;
+      const progress =
+        totalEpisodes > 0
+          ? Math.round((episode.episodeNumber / totalEpisodes) * 100)
+          : 0;
+
+      await this.readingHistoryModel.findOneAndUpdate(
+        { userId, workId: episode.workId },
+        {
+          $set: {
+            lastEpisodeId: episode._id,
+            lastEpisodeNumber: episode.episodeNumber,
+            progress,
+            lastReadAt: new Date(),
+          },
+        },
+        { upsert: true },
+      );
+
+      this.logger.debug(
+        `episodes.recordReadingHistory - userId: ${userId}, workId: ${episode.workId}, ep: ${episode.episodeNumber}`,
+        'EpisodesService',
+      );
+    } catch (error) {
+      this.logger.error(
+        `episodes.recordReadingHistory - failed: ${error.message}`,
+        error.stack,
+        'EpisodesService',
+      );
+    }
   }
 
   /**

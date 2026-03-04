@@ -12,6 +12,7 @@ export interface Episode {
   viewCount: number;
   likeCount: number;
   commentCount: number;
+  requiresPurchase?: boolean;
   authorNote?: string;
   aiMetadata?: {
     model: string;

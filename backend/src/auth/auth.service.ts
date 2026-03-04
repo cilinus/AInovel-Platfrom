@@ -8,6 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 
 import { User, UserDocument, UserRole, AuthProvider } from '../common/schemas/user.schema';
 import { LoggerService } from '../logger/logger.service';
@@ -136,10 +137,11 @@ export class AuthService {
         }
       }
 
-      // Create new user
+      // Create new user with nickname collision handling
+      const nickname = await this.resolveUniqueNickname(profile.nickname);
       user = await this.userModel.create({
         email: profile.email,
-        nickname: profile.nickname,
+        nickname,
         profileImage: profile.profileImage,
         socialAccounts: [
           {
@@ -169,6 +171,30 @@ export class AuthService {
     } catch {
       throw new UnauthorizedException('Invalid refresh token');
     }
+  }
+
+  private async resolveUniqueNickname(baseNickname: string): Promise<string> {
+    const existing = await this.userModel.findOne({ nickname: baseNickname });
+    if (!existing) return baseNickname;
+
+    // Append random 4-char hex suffix, retry up to 5 times
+    for (let i = 0; i < 5; i++) {
+      const suffix = crypto.randomBytes(2).toString('hex');
+      const candidate = `${baseNickname}_${suffix}`;
+      if (candidate.length > 20) {
+        // Truncate base to fit within 20-char limit
+        const truncated = baseNickname.slice(0, 15);
+        const fallback = `${truncated}_${suffix}`;
+        const exists = await this.userModel.findOne({ nickname: fallback });
+        if (!exists) return fallback;
+      } else {
+        const exists = await this.userModel.findOne({ nickname: candidate });
+        if (!exists) return candidate;
+      }
+    }
+
+    // Last resort: use provider + random id
+    return `user_${crypto.randomBytes(4).toString('hex')}`;
   }
 
   private issueTokens(user: UserDocument): TokenPair {

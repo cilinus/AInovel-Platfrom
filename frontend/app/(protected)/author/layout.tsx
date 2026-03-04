@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import styled from 'styled-components';
 import Link from 'next/link';
-import { LayoutDashboard, BookOpen, PlusCircle } from 'lucide-react';
+import { LayoutDashboard, BookOpen, PlusCircle, Coins } from 'lucide-react';
 import { useAuthStore } from '@/src/stores/authStore';
 import Header from '@/src/components/Layout/Header';
 
@@ -110,6 +110,7 @@ const NAV_ITEMS = [
   { href: '/author', label: '대시보드', icon: LayoutDashboard },
   { href: '/author/works', label: '내 작품', icon: BookOpen },
   { href: '/author/works/new', label: '새 작품', icon: PlusCircle },
+  { href: '/author/earnings', label: '수익 관리', icon: Coins },
 ];
 
 export default function AuthorLayout({ children }: { children: React.ReactNode }) {

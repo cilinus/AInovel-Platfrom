@@ -18,6 +18,8 @@ import { formatNumber, formatDate, toImageUrl } from '@/src/lib/utils';
 import Badge from '@/src/components/common/Badge';
 import Button from '@/src/components/common/Button';
 import Loading from '@/src/components/common/Loading';
+import ChargeModal from '@/src/components/payments/ChargeModal';
+import CashoutModal from '@/src/components/payments/CashoutModal';
 import WorkCard from '@/src/components/works/WorkCard';
 import type { Work } from '@/src/types/work';
 
@@ -447,6 +449,9 @@ const EmptyText = styled.p`
 
 export default function MyPageContent() {
   const user = useAuthStore((s) => s.user);
+  const updateTokenBalance = useAuthStore((s) => s.updateTokenBalance);
+  const [chargeOpen, setChargeOpen] = useState(false);
+  const [cashoutOpen, setCashoutOpen] = useState(false);
 
   const [readingHistory, setReadingHistory] = useState<ReadingHistoryItem[]>([]);
   const [historyWorks, setHistoryWorks] = useState<Map<string, Work>>(new Map());
@@ -545,9 +550,16 @@ export default function MyPageContent() {
             <TokenValue>{user.tokenBalance.toLocaleString()}</TokenValue>
             <TokenUnit>토큰</TokenUnit>
           </div>
-          <Button variant="primary" size="sm" disabled>
-            충전하기
-          </Button>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <Button variant="primary" size="sm" onClick={() => setChargeOpen(true)}>
+              충전하기
+            </Button>
+            {user.role === 'AUTHOR' && (
+              <Button variant="outline" size="sm" onClick={() => setCashoutOpen(true)}>
+                정산하기
+              </Button>
+            )}
+          </div>
         </TokenCard>
       </TopCards>
 
@@ -639,6 +651,18 @@ export default function MyPageContent() {
           </PurchaseList>
         )}
       </Section>
+      <ChargeModal
+        isOpen={chargeOpen}
+        onClose={() => setChargeOpen(false)}
+        onSuccess={(balance) => updateTokenBalance(balance)}
+      />
+      {user.role === 'AUTHOR' && (
+        <CashoutModal
+          isOpen={cashoutOpen}
+          onClose={() => setCashoutOpen(false)}
+          onSuccess={(balance) => updateTokenBalance(balance)}
+        />
+      )}
     </PageWrapper>
   );
 }

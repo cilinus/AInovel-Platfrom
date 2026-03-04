@@ -17,6 +17,12 @@ export class Purchase {
   @Prop({ required: true })
   tokenAmount: number;
 
+  @Prop({ required: true })
+  authorRevenue: number;
+
+  @Prop({ required: true })
+  platformFee: number;
+
   @Prop()
   expiresAt?: Date;
 }

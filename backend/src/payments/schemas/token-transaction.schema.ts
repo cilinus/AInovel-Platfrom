@@ -6,6 +6,7 @@ export type TokenTransactionDocument = HydratedDocument<TokenTransaction>;
 export enum TransactionType {
   CHARGE = 'charge',
   PURCHASE = 'purchase',
+  REVENUE = 'revenue',
   REFUND = 'refund',
   REWARD = 'reward',
   SETTLEMENT = 'settlement',
@@ -30,6 +31,9 @@ export class TokenTransaction {
 
   @Prop({ unique: true, sparse: true })
   idempotencyKey?: string;
+
+  @Prop({ type: Types.ObjectId, ref: 'Episode' })
+  relatedEpisodeId?: Types.ObjectId;
 
   @Prop()
   paymentKey?: string;

@@ -97,8 +97,11 @@ export class EpisodesController {
   @ApiParam({ name: 'episodeId', description: '회차 ID' })
   @ApiResponse({ status: 200, description: '회차 내용 반환' })
   @ApiResponse({ status: 404, description: '회차를 찾을 수 없음' })
-  async getContent(@Param('episodeId') episodeId: string) {
-    return this.episodesService.getContent(episodeId);
+  async getContent(
+    @Param('episodeId') episodeId: string,
+    @CurrentUser('userId') userId: string,
+  ) {
+    return this.episodesService.getContent(episodeId, userId);
   }
 
   @Post()

@@ -1,11 +1,31 @@
 export enum TransactionType {
-  CHARGE = 'CHARGE',
-  PURCHASE = 'PURCHASE',
-  BONUS = 'BONUS',
-  REFUND = 'REFUND',
-  SETTLEMENT = 'SETTLEMENT',
-  EXPIRED = 'EXPIRED',
+  CHARGE = 'charge',
+  PURCHASE = 'purchase',
+  REVENUE = 'revenue',
+  REFUND = 'refund',
+  REWARD = 'reward',
+  SETTLEMENT = 'settlement',
 }
+
+export interface TokenPackage {
+  id: string;
+  price: number;
+  baseTokens: number;
+  bonusPercent: number;
+  totalTokens: number;
+  label: string;
+}
+
+export const TOKEN_PACKAGES: readonly TokenPackage[] = [
+  { id: '10000', price: 10000, baseTokens: 10000, bonusPercent: 10, totalTokens: 11000, label: '10,000원' },
+  { id: '50000', price: 50000, baseTokens: 50000, bonusPercent: 20, totalTokens: 60000, label: '50,000원' },
+  { id: '100000', price: 100000, baseTokens: 100000, bonusPercent: 30, totalTokens: 130000, label: '100,000원' },
+] as const;
+
+export const AUTHOR_REVENUE_PERCENT = 80;
+export const PLATFORM_FEE_PERCENT = 20;
+export const WITHDRAWAL_RATE = 0.9;
+export const MIN_WITHDRAWAL_TOKENS = 1000;
 
 export interface TokenTransaction {
   id: string;
@@ -26,21 +46,18 @@ export interface TokenTransaction {
 }
 
 export interface ChargeTokenRequest {
-  amount: number; // 충전할 토큰 수
-  paymentKey: string; // 토스페이먼츠 결제키
-  orderId: string;
+  packageId: string;
+  idempotencyKey: string;
 }
 
 export interface PurchaseEpisodeRequest {
   episodeId: string;
 }
 
-export const TOKEN_PACKAGES = [
-  { tokens: 10, price: 1000, label: '10 토큰' },
-  { tokens: 50, price: 4500, label: '50 토큰', discount: '10%' },
-  { tokens: 100, price: 8000, label: '100 토큰', discount: '20%' },
-  { tokens: 300, price: 21000, label: '300 토큰', discount: '30%' },
-] as const;
+export interface WithdrawTokensRequest {
+  amount: number;
+  idempotencyKey: string;
+}
 
 export const SUBSCRIPTION_TIERS = [
   { id: 'basic', name: '베이직', price: 5900, monthlyTokens: 70, description: '매월 70 토큰 지급' },

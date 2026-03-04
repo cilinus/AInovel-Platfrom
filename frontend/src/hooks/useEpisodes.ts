@@ -16,6 +16,7 @@ interface ApiEpisode {
   isFree?: boolean;
   isPublished?: boolean;
   publishedAt?: string;
+  requiresPurchase?: boolean;
   stats?: {
     viewCount?: number;
     likeCount?: number;
@@ -48,6 +49,7 @@ function mapApiEpisode(api: ApiEpisode): Episode {
     viewCount: api.stats?.viewCount ?? 0,
     likeCount: api.stats?.likeCount ?? 0,
     commentCount: api.stats?.commentCount ?? 0,
+    requiresPurchase: api.requiresPurchase ?? false,
     authorNote: api.authorNote,
     aiMetadata: api.aiMetadata,
     createdAt: api.createdAt ?? '',
@@ -107,7 +109,7 @@ export function useEpisode(workId: string, episodeId: string) {
     fetchEpisode();
   }, [fetchEpisode]);
 
-  return { episode, loading, error };
+  return { episode, loading, error, refetch: fetchEpisode };
 }
 
 interface EpisodeNavItem {

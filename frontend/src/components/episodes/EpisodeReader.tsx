@@ -1,16 +1,19 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useRouter } from 'next/navigation';
-import { X, ChevronLeft, ChevronRight, Settings } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Settings, Lock } from 'lucide-react';
 import { useEpisode, useEpisodeNavigation } from '@/src/hooks/useEpisodes';
 import { useWork } from '@/src/hooks/useWorks';
 import { useReaderStore } from '@/src/stores/readerStore';
+import { useAuthStore } from '@/src/stores/authStore';
 import Loading from '@/src/components/common/Loading';
+import Button from '@/src/components/common/Button';
 import ReaderToolbar from './ReaderToolbar';
 import EpisodeRating from './EpisodeRating';
 import CommentSection from '@/src/components/comments/CommentSection';
+import PurchaseConfirmModal from '@/src/components/payments/PurchaseConfirmModal';
 
 interface EpisodeReaderProps {
   workId: string;
@@ -212,12 +215,35 @@ const SettingsButton = styled.button`
   }
 `;
 
+const PurchasePrompt = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 4rem 1rem;
+  text-align: center;
+`;
+
+const PurchaseLockIcon = styled.div`
+  color: ${({ theme }) => theme.colors.mutedForeground};
+`;
+
+const PurchaseText = styled.p`
+  font-size: 1rem;
+  color: ${({ theme }) => theme.colors.mutedForeground};
+  margin: 0;
+`;
+
 export default function EpisodeReader({ workId, episodeId }: EpisodeReaderProps) {
   const router = useRouter();
-  const { episode, loading: episodeLoading, error: episodeError } = useEpisode(workId, episodeId);
+  const { episode, loading: episodeLoading, error: episodeError, refetch } = useEpisode(workId, episodeId);
   const { data: work } = useWork(workId);
   const nav = useEpisodeNavigation(workId, episodeId);
   const { settings, toggleToolbar } = useReaderStore();
+  const user = useAuthStore((s) => s.user);
+  const updateTokenBalance = useAuthStore((s) => s.updateTokenBalance);
+  const [purchaseModalOpen, setPurchaseModalOpen] = useState(false);
 
   const handleGoToWork = () => {
     router.push(`/works/${workId}`);
@@ -279,13 +305,50 @@ export default function EpisodeReader({ workId, episodeId }: EpisodeReaderProps)
           <ErrorText>{episodeError.message}</ErrorText>
         )}
         {!episodeLoading && !episodeError && episode && (
-          <>
-            {episode.content}
-            <EpisodeRating workId={workId} episodeId={episodeId} />
-            <CommentSection workId={workId} episodeId={episodeId} />
-          </>
+          episode.requiresPurchase ? (
+            <PurchasePrompt>
+              <PurchaseLockIcon>
+                <Lock size={48} />
+              </PurchaseLockIcon>
+              <PurchaseText>
+                이 에피소드는 유료 콘텐츠입니다.
+              </PurchaseText>
+              <PurchaseText>
+                {episode.price} 토큰으로 구매하면 읽을 수 있습니다.
+              </PurchaseText>
+              <Button
+                variant="primary"
+                size="md"
+                onClick={() => setPurchaseModalOpen(true)}
+              >
+                구매하기
+              </Button>
+            </PurchasePrompt>
+          ) : (
+            <>
+              {episode.content}
+              <EpisodeRating workId={workId} episodeId={episodeId} />
+              <CommentSection workId={workId} episodeId={episodeId} />
+            </>
+          )
         )}
       </ContentArea>
+
+      {episode && episode.requiresPurchase && (
+        <PurchaseConfirmModal
+          isOpen={purchaseModalOpen}
+          onClose={() => setPurchaseModalOpen(false)}
+          episodeTitle={episode.title}
+          episodeNumber={episode.number}
+          episodePrice={episode.price}
+          episodeId={episode.id}
+          currentBalance={user?.tokenBalance ?? 0}
+          onPurchaseSuccess={(balance) => {
+            updateTokenBalance(balance);
+            refetch();
+          }}
+        />
+      )}
 
       <SettingsButton
         type="button"
