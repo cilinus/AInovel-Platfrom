@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Types } from 'mongoose';
+import { HydratedDocument, Schema as MongooseSchema, Types } from 'mongoose';
 
 export type EpisodeDocument = HydratedDocument<Episode>;
 
@@ -22,7 +22,7 @@ const AIMetadataSchema = SchemaFactory.createForClass(AIMetadata);
 
 @Schema({ timestamps: true, collection: 'episodes' })
 export class Episode {
-  @Prop({ type: Types.ObjectId, ref: 'Work', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Work', required: true })
   workId: Types.ObjectId;
 
   @Prop({ required: true })

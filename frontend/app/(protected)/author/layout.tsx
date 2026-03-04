@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import styled from 'styled-components';
 import Link from 'next/link';
-import { LayoutDashboard, BookOpen, PlusCircle, Coins } from 'lucide-react';
+import { LayoutDashboard, BookOpen, PlusCircle, Coins, Sparkles } from 'lucide-react';
 import { useAuthStore } from '@/src/stores/authStore';
 import Header from '@/src/components/Layout/Header';
 
@@ -111,6 +111,7 @@ const NAV_ITEMS = [
   { href: '/author/works', label: '내 작품', icon: BookOpen },
   { href: '/author/works/new', label: '새 작품', icon: PlusCircle },
   { href: '/author/earnings', label: '수익 관리', icon: Coins },
+  { href: '/author/novel', label: 'AI 소설', icon: Sparkles },
 ];
 
 export default function AuthorLayout({ children }: { children: React.ReactNode }) {
@@ -139,7 +140,7 @@ export default function AuthorLayout({ children }: { children: React.ReactNode }
           <MobileTabLink
             key={item.href}
             href={item.href}
-            $active={pathname === item.href}
+            $active={pathname === item.href || (item.href !== '/author' && pathname.startsWith(item.href))}
           >
             <item.icon size={14} />
             {item.label}
@@ -153,7 +154,7 @@ export default function AuthorLayout({ children }: { children: React.ReactNode }
             <SidebarLink
               key={item.href}
               href={item.href}
-              $active={pathname === item.href}
+              $active={pathname === item.href || (item.href !== '/author' && pathname.startsWith(item.href))}
             >
               <item.icon size={16} />
               {item.label}

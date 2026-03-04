@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Types } from 'mongoose';
+import { HydratedDocument, Schema as MongooseSchema, Types } from 'mongoose';
 
 export type TokenTransactionDocument = HydratedDocument<TokenTransaction>;
 
@@ -10,11 +10,12 @@ export enum TransactionType {
   REFUND = 'refund',
   REWARD = 'reward',
   SETTLEMENT = 'settlement',
+  AI_GENERATION = 'ai_generation',
 }
 
 @Schema({ timestamps: true, collection: 'token_transactions' })
 export class TokenTransaction {
-  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', required: true })
   userId: Types.ObjectId;
 
   @Prop({ enum: TransactionType, required: true })
@@ -32,8 +33,11 @@ export class TokenTransaction {
   @Prop({ unique: true, sparse: true })
   idempotencyKey?: string;
 
-  @Prop({ type: Types.ObjectId, ref: 'Episode' })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Episode' })
   relatedEpisodeId?: Types.ObjectId;
+
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'NovelProject' })
+  relatedProjectId?: Types.ObjectId;
 
   @Prop()
   paymentKey?: string;

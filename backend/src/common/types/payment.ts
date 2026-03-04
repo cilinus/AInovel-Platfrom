@@ -5,6 +5,7 @@ export enum TransactionType {
   REFUND = 'refund',
   REWARD = 'reward',
   SETTLEMENT = 'settlement',
+  AI_GENERATION = 'ai_generation',
 }
 
 export interface TokenPackage {

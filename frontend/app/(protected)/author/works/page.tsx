@@ -72,8 +72,15 @@ const EmptyText = styled.p`
   padding: 3rem;
 `;
 
+const ErrorText = styled.p`
+  font-size: 0.875rem;
+  color: ${({ theme }) => theme.colors.destructive};
+  text-align: center;
+  padding: 2rem;
+`;
+
 export default function AuthorWorksPage() {
-  const { works, loading } = useAuthorWorks();
+  const { works, loading, error } = useAuthorWorks();
 
   if (loading) return <Loading />;
 
@@ -89,7 +96,9 @@ export default function AuthorWorksPage() {
         </NewWorkLink>
       </PageHeader>
 
-      {works.length === 0 ? (
+      {error && <ErrorText>{error.message}</ErrorText>}
+
+      {!error && works.length === 0 ? (
         <EmptyText>등록된 작품이 없습니다.</EmptyText>
       ) : (
         <Table>

@@ -4,10 +4,19 @@ import React, { useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import styled from 'styled-components';
 
+type ModalSize = 'sm' | 'md' | 'lg';
+
+const MODAL_WIDTHS: Record<ModalSize, string> = {
+  sm: '480px',
+  md: '560px',
+  lg: '640px',
+};
+
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
+  size?: ModalSize;
   children: React.ReactNode;
 }
 
@@ -21,10 +30,10 @@ const Overlay = styled.div`
   background-color: rgba(0, 0, 0, 0.5);
 `;
 
-const ModalCard = styled.div`
+const ModalCard = styled.div<{ $maxWidth: string }>`
   position: relative;
   width: 90%;
-  max-width: 480px;
+  max-width: ${({ $maxWidth }) => $maxWidth};
   max-height: 85vh;
   overflow-y: auto;
   padding: 1.5rem;
@@ -58,7 +67,7 @@ const CloseButton = styled.button`
   }
 `;
 
-export default function Modal({ isOpen, onClose, title, children }: ModalProps) {
+export default function Modal({ isOpen, onClose, title, size = 'sm', children }: ModalProps) {
   const handleEsc = useCallback((e: KeyboardEvent) => {
     if (e.key === 'Escape') onClose();
   }, [onClose]);
@@ -79,7 +88,7 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
 
   return createPortal(
     <Overlay onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <ModalCard>
+      <ModalCard $maxWidth={MODAL_WIDTHS[size]}>
         <CloseButton type="button" onClick={onClose} aria-label="닫기">&times;</CloseButton>
         <ModalTitle>{title}</ModalTitle>
         {children}

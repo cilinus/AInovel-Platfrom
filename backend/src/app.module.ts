@@ -14,6 +14,7 @@ import { AdminModule } from './admin/admin.module';
 import { CommentsModule } from './comments/comments.module';
 import { RatingsModule } from './ratings/ratings.module';
 import { BookmarksModule } from './bookmarks/bookmarks.module';
+import { NovelModule } from './novel/novel.module';
 import { CommonModule } from './common/common.module';
 import { LoggerModule } from './logger/logger.module';
 import { WebSocketModule } from './websocket/websocket.module';
@@ -61,6 +62,7 @@ import { WebSocketModule } from './websocket/websocket.module';
     CommentsModule,
     RatingsModule,
     BookmarksModule,
+    NovelModule,
   ],
 })
 export class AppModule {}
